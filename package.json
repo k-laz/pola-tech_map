@@ -1,5 +1,5 @@
 {
-  "name": "custom_map_app",
+  "name": "custom_map_pola",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -8,5 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "mongodb": "^3.6.3"
+  }
 }
