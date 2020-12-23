@@ -8,7 +8,7 @@ body { margin: 0; padding: 0; }
     right: 140px;
 }
 
-#shipAddForm {
+#editFleetForm {
     visibility: hidden; 
     position: absolute;
     right: 10px;
@@ -33,11 +33,13 @@ body { margin: 0; padding: 0; }
 
 
 .ship {
-    height: 24px;
-    width: 24px;
-    background-image: url('cargo-ship.png');
+    width: 35px;
+    height: 35px;
+    background-image: url('sleigh.svg');
     cursor: pointer;
+    background-size: cover;
 }
+
 
 #menu {
     background: #fff;
@@ -80,4 +82,3 @@ body { margin: 0; padding: 0; }
 #menu a.active:hover {
     background: #3074a4;
 }
-  

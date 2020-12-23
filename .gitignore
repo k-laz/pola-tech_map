@@ -3,4 +3,6 @@ testGeoJSON.html
 testGeoJSON.js
 testLanguageMap.html
 testLayers.html
+testImage.js
+testSVG.js
 .env
