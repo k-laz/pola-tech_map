@@ -9,17 +9,13 @@ const MongoClient = require("mongodb").MongoClient;
 const { json } = require('body-parser');
 
 
-const compression = require('compression');
-app.use(compression()); //Compress all routes
-
 const helmet = require('helmet');
 app.use(helmet());
 
 
 var PORT = 3000;
 app.use(express.static(__dirname));
-app.listen(process.env.PORT || 3000, 
-    () => console.log("Server is running..."));
+app.listen(process.env.PORT || 3000);
     
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
