@@ -9,13 +9,18 @@ const MongoClient = require("mongodb").MongoClient;
 const { json } = require('body-parser');
 
 
+const compression = require('compression');
+app.use(compression()); //Compress all routes
+
+const helmet = require('helmet');
+app.use(helmet());
+
+
 var PORT = 3000;
 app.use(express.static(__dirname));
-app.listen(PORT, (err) => {
-    if (err) console.log(err);
-    console.log("server listening on PORT", PORT);
-    console.log("http://localhost:3000");
-});
+app.listen(process.env.PORT || 3000, 
+    () => console.log("Server is running..."));
+    
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
 app.get('/', (req, res) => {
@@ -95,7 +100,6 @@ app.get("/get_all_data", (req, res) => {
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
         try {
             await client.connect();
-            console.log("Connected correctly to the database for fleet retrieval!");
             var db = client.db("map");
 
             var allVessels = await db.collection("fleet").find().toArray();

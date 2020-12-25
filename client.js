@@ -159,43 +159,44 @@ async function drawAllVesselsFromDB() {
     for (var i = 0; i < data.length; i++) {
         if (data[i].info != undefined) {
             var ship_form = document.createElement('div');
-        ship_form.setAttribute('class', 'ship_form');
-        var text = document.createElement('p');
-        
-        // creates an info table for the vessel from the provided info
-        for (x in data[i].info) {
-            text.innerHTML += x + " : " + data[i].info[x] + "  |  ";
-        }
+            ship_form.setAttribute('class', 'ship_form');
+            ship_form.setAttribute('value', data.mmsi);
+            var text = document.createElement('p');
+            
+            // creates an info table for the vessel from the provided info
+            for (x in data[i].info) {
+                text.innerHTML += x + " : " + data[i].info[x] + "  |  ";
+            }
 
-        // creates a popup for the ship
-        let shipPopup = new mapboxgl.Popup({
-            anchor: "bottom",
-            offset: [0, -8]
-        });
+            // creates a popup for the ship
+            let shipPopup = new mapboxgl.Popup({
+                anchor: "bottom",
+                offset: [0, -8]
+            });
 
-        ship_form.appendChild(text);
-        shipPopup.setHTML(ship_form.innerText);
+            ship_form.appendChild(text);
+            shipPopup.setHTML(ship_form.innerText);
 
-        var shipIcon = document.createElement('div');
-        shipIcon.classList.add('ship');
+            var shipIcon = document.createElement('div');
+            shipIcon.classList.add('ship');
 
-        var ship_marker = new mapboxgl.Marker(shipIcon, {
-            draggable: false,
-        });
+            var ship_marker = new mapboxgl.Marker(shipIcon, {
+                draggable: false,
+            });
 
-        // inputs all of the data into the popup as well as setting the ships position
-        // can add .setRotation(data[i].COURSE) to rotate the icon in the direction of the course of the ship
-        ship_marker.setLngLat([data[i].info.LON, data[i].info.LAT]).setPopup(shipPopup).setRotation(data[i].info.COURSE).addTo(map);
+            // inputs all of the data into the popup as well as setting the ships position
+            // can add .setRotation(data[i].COURSE) to rotate the icon in the direction of the course of the ship
+            ship_marker.setLngLat([data[i].info.LON, data[i].info.LAT]).setPopup(shipPopup).setRotation(data[i].info.COURSE).addTo(map);
 
-        // adding coordinates into map array structure for fast retrieval 
-        shipCoordinates.set(data[i].mmsi, [data[i].info.LON, data[i].info.LAT]);
+            // adding coordinates into map array structure for fast retrieval 
+            shipCoordinates.set(data[i].mmsi, [data[i].info.LON, data[i].info.LAT]);
 
 
-        // add the ship to the drop down
-        let ship_option = document.createElement('option');
-        ship_option.value = data[i].mmsi;
-        ship_option.innerText = data[i].mmsi;
-        ship_dropdown.appendChild(ship_option);
+            // add the ship to the drop down
+            let ship_option = document.createElement('option');
+            ship_option.value = data[i].mmsi;
+            ship_option.innerText = data[i].mmsi;
+            ship_dropdown.appendChild(ship_option);
         }
     }
 }
@@ -443,4 +444,5 @@ async function deleteData(url = '') {
 async function getData(url = '') {
 
 }
+
 
