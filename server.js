@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const path = require('path');
 var bodyParser = require('body-parser');
-//require('dotenv').config();
 // const url = process.env.MONGODB_KEY;
 const url = "mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority"
 
@@ -10,11 +9,22 @@ const MongoClient = require("mongodb").MongoClient;
 const { json } = require('body-parser');
 
 
+const config = require('./config.js');
+console.log(`NODE_ENV=${config.NODE_ENV}`);
+
+// var environment = process.env.NODE_ENV
+// var isDevelopment = environment === 'development'
+
+// if (isDevelopment) {
+//   setUpMoreVerboseLogging()
+// }
+
+
 const helmet = require('helmet');
 app.use(helmet());
 
 app.use(express.static(__dirname));
-app.listen(process.env.PORT || 3000);
+app.listen(config.PORT || 3000);
     
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
