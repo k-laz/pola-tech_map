@@ -2,12 +2,12 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoia2xheiIsImEiOiJja2h1bGl3dXYyYjB0MzJrNnNxcnBmc
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
-    center: [20, 37],
-    zoom: 5 ,
+    center: [0, 30],
+    zoom: 1,
     maxZoom: 15,
 });
 
-//                                  MAIN MAP FUNCTION WITH PORTS DATA:
+//                                      MAIN MAP FUNCTION WITH PORTS DATA:
 
 // older port_icon : 'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png'
 map.on('load', () => {
@@ -29,16 +29,16 @@ map.on('load', () => {
               'source': 'ports',
               'layout': {
                   'icon-image': 'custom-marker',
-                  'icon-size': 0.23,
+                  'icon-size': 0.11,
                   // get the title name from the source's "title" property
                   'text-field': ['get', 'name'],
                   'text-font': [
                       'Open Sans Semibold',
                       'Arial Unicode MS Bold'
                   ],
-                  'text-offset': [0, 1.2],
+                  'text-offset': [0, .5],
                   'text-anchor': 'top',
-                  'text-size': 12
+                  'text-size': 10
               }
           });
       }
@@ -49,7 +49,7 @@ map.on('load', () => {
 // -------------------------------------------------------------
 // -------------------------------------------------------------
 
-//                          BUTTON TO DISABLE PORTS:
+//                                BUTTON TO DISABLE PORTS:
 
 // enumerate ids of the layers
 var toggleableLayerIds = ['ports'];
@@ -142,112 +142,93 @@ map.on('click', function(e) {
 
 // ------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------
-//                                                       VESSEL LOGIC AND API:
+//                                             DRAWING VESSELS ONTO THE MAP FROM DB:
 
 const ship_dropdown = document.getElementById('ship-list');  
-const VesselAPIkey = "https://services.marinetraffic.com/api/exportvessel/v:5/bef14d8cede92a982acb571a1cdd8285904078a7/timespan:20/protocol:jsono/mmsi:";                          
-const ships = new Map();
-mapVessels();
+//const VesselAPIkey = process.env.MARINE_TRAFFIC_API_SECRET_KEY;
+const VesselAPIkey = "https://services.marinetraffic.com/api/exportvessel/v:5/7f70cbed5527332c828792c7bce77421dd54fbe8/timespan:2880/protocol:jsono/mmsi:";
+const shipCoordinates = new Map();
 
+drawAllVesselsFromDB();
 
-// I am creating a map here for extra info about the ships 
-// key = mmsi, value = coordinates(or maybe more info)
-// I could have added all of this info to the database, 
-// but I dont want to rewrite the entire thing, 
-// so I am adding this extra map that is going to get info from the api call from Marine Traffic
-var shipCoordinates = new Map();
+async function drawAllVesselsFromDB() {
+    var data = await get_all_vessel_data_from_db();
+    console.log("inside draw -> data: " + data.length);
+    clearDropDownMenu();
 
-
-async function mapVessels() {
-    await loadMap();
-
-    function assignAndDraw(key, value) {  
-        // key = mmsi
-        // value = name of the ship
-
-
-        // add the ships to the dropdown
-        let ship_option = document.createElement('option');
-        ship_option.value = key;
-        ship_option.innerText = value + " : " + key;
-        ship_dropdown.appendChild(ship_option);
-
-        // send the request to the MarineTraffic API
-        drawVesselToMapFromAPI(VesselAPIkey, key);
-    }
-    // iterator that fills the dropdown and asks the Marine Traffic API
-    ships.forEach(assignAndDraw);
-}
-
-async function loadMap() {
-    let response = await fetch("/load_map");
-    if (response.ok) {
-        let data = await response.json();
-        for (var i = 0; i < data.length; i++) {
-            ships.set(data[i].name, data[i].mmsi);
-        }
-    } else {
-        alert("HTTP-Error: " + response.status);
-    }
-}
-
-
-async function drawVesselToMapFromAPI(APIkey, value) {
-    let response = await fetch(APIkey + value);
-    if (response.ok) {
-        let data = await response.json();
-        for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].info != undefined) {
             var ship_form = document.createElement('div');
-            ship_form.setAttribute('class', 'ship_form');
-            var text = document.createElement('p');
-            
-            // creates an info table for the vessel from the provided info
-            for (x in data[i]) {
-                text.innerHTML += x + " : " + data[i][x] + "  |  ";
-            }
-
-            // creates a popup for the ship
-            let shipPopup = new mapboxgl.Popup({
-                anchor: "bottom",
-                offset: [0, -8]
-            });
-
-            ship_form.appendChild(text);
-            shipPopup.setHTML(ship_form.innerText);
-
-            var shipIcon = document.createElement('div');
-            shipIcon.classList.add('ship');
-
-            var ship_marker = new mapboxgl.Marker(shipIcon, {
-                draggable: false,
-            });
-            // inputs all of the data into the popup as well as setting the ships position
-            // can add .setRotation(data[i].COURSE) to rotate the icon in the direction of the course of the ship
-            ship_marker.setLngLat([data[i].LON, data[i].LAT]).setPopup(shipPopup).addTo(map);
-
-            // adding extra info into the second map structure
-            shipCoordinates.set(value, [data[i].LON, data[i].LAT]);
+        ship_form.setAttribute('class', 'ship_form');
+        var text = document.createElement('p');
+        
+        // creates an info table for the vessel from the provided info
+        for (x in data[i].info) {
+            text.innerHTML += x + " : " + data[i].info[x] + "  |  ";
         }
+
+        // creates a popup for the ship
+        let shipPopup = new mapboxgl.Popup({
+            anchor: "bottom",
+            offset: [0, -8]
+        });
+
+        ship_form.appendChild(text);
+        shipPopup.setHTML(ship_form.innerText);
+
+        var shipIcon = document.createElement('div');
+        shipIcon.classList.add('ship');
+
+        var ship_marker = new mapboxgl.Marker(shipIcon, {
+            draggable: false,
+        });
+
+        // inputs all of the data into the popup as well as setting the ships position
+        // can add .setRotation(data[i].COURSE) to rotate the icon in the direction of the course of the ship
+        ship_marker.setLngLat([data[i].info.LON, data[i].info.LAT]).setPopup(shipPopup).setRotation(data[i].info.COURSE).addTo(map);
+
+        // adding coordinates into map array structure for fast retrieval 
+        shipCoordinates.set(data[i].mmsi, [data[i].info.LON, data[i].info.LAT]);
+
+
+        // add the ship to the drop down
+        let ship_option = document.createElement('option');
+        ship_option.value = data[i].mmsi;
+        ship_option.innerText = data[i].mmsi;
+        ship_dropdown.appendChild(ship_option);
+        }
+    }
+}
+
+function refresh() {    
+    setTimeout(function () {
+        location.reload()
+    }, 100);
+}
+
+async function get_all_vessel_data_from_db() {
+    let response = await fetch("/get_all_data");
+    if (response.ok) {
+        let data = await response.json();
+        return data;
     } else {
         alert("HTTP-Error: " + response.status);
     }
 }
 
-// --------------------------------------------------
-// --------------------------------------------------
-//                                        ADD AND REMOVE SHIPS FROM THE DATABASE:
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+//                                              UPDATE SHIP INFO FROM MARINE TRAFFIC:
 
 var editFleet = document.createElement('a');
 editFleet.href = '#';
 editFleet.className = 'active';
 editFleet.textContent = "edit fleet";
 document.getElementById('menu').appendChild(editFleet);
-
 var editFleetForm = document.getElementById("editFleetForm");
 const addShipBtn = document.getElementById('addBtn');
 const removeShipBtn = document.getElementById('removeBtn');
-
-
+const updateShipBtn = document.getElementById('updateBtn');
 editFleet.onclick = (e => {
     e.preventDefault();
     e.stopPropagation();
@@ -258,77 +239,47 @@ editFleet.onclick = (e => {
     }
 });
 
-addShipBtn.onclick = (e => {
+
+
+updateShipBtn.onclick = (e => {
     e.preventDefault();
     e.stopPropagation();
-    var name = document.getElementById('inputName').value;
-    var mmsi = document.getElementById('inputMMSI').value;
-    if (name != '' && mmsi != '' && !ADuplicate(name, mmsi)) {
-        // add to the map
-        ships.set(name, mmsi);
+    UPDATE_ALL_VESSELS_INFO();
+    drawAllVesselsFromDB();
+});
 
-        // add to dropdown
-        let ship_option = document.createElement('option');
-        ship_option.value = mmsi;
-        ship_option.innerText = name + " : " + mmsi;
-        ship_dropdown.appendChild(ship_option);
+//-----------------------------------------------------------------------------------------------------
+//                      UPDATING THE ENTIRE COLLECTION WITH DATA FROM MARINE TRAFFIC
+async function UPDATE_ALL_VESSELS_INFO() {
+    var allMMSI = get_all_mmsi();
 
-        // add to the database
-        addShipToDB(name, mmsi);
+    deleteData("/delete_all");
 
-        ships.forEach(updateMap());
+    for (mmsi in allMMSI) {
+        addShipToDB(mmsi);
+    }
+}
 
-        editFleetForm.style.visibility = 'hidden';
+
+//                           GETTING ALL MMSI FROM THE DB:
+async function get_all_mmsi() {
+    let response = await fetch("/get_all_mmsi");
+    getData
+}
+
+
+//              GETTING A SINGLE VESSEL INFO FROM MARINE TRAFFIC WITH AN API CALL:
+async function getVesselInfoFromMarineTraffic(APIkey, mmsi) {
+    let response = await fetch(APIkey + mmsi);
+    if (response.ok) {
+        let data = await response.json();
+        return data[0];
     } else {
-        console.log("Adding a duplicate or identical mmsi!!")
+        alert("HTTP-Error: " + response.status);
     }
-});
-
-// Updates the map
-function updateMap(key, value) {
-    // send the request to the MarineTraffic API
-    drawVesselToMapFromAPI(VesselAPIkey, key);
 }
 
-removeShipBtn.onclick = (e => {
-    e.preventDefault();
-    e.stopPropagation();
-    var name = document.getElementById('inputName').value;
-    var mmsi = document.getElementById('inputMMSI').value;
-    if (ADuplicate(name, mmsi)) {
-        // remove from the map
-        ships.delete(name);
-
-        // remove from the dropdown
-        var child_removed = document.querySelectorAll(`option[value="${mmsi}"]`);
-        ship_dropdown.removeChild(child_removed[0]);
-
-        // remove from the database
-        removeShipFromDB(name, mmsi);
-
-        //updates the map
-        ships.forEach(updateMap());
-
-        editFleetForm.style.visibility = 'hidden';
-    }
-});
-
-// checks if the ship is a duplicate
-function ADuplicate(name, mmsi) {
-    result = false;
-    // ships.forEach((key, value) => {
-    //     if ((key == mmsi) || (value == name)) {
-    //         console.log("key : " + key + "mmsi: " + mmsi);
-    //         result = true
-    //     }
-    // });
-    if (ships.has(name)) {
-        result = true;
-    }
-    return result;
-}
-
-//---------------------------------------
+//------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 //                                         DROPDOWN MENU FUNCTIONALITY:
 
@@ -342,118 +293,154 @@ ship_dropdown.onchange = () => {
     });
 }
 
-
-
-
-
-
-// Function to send user input (name of the ship and its mmsi) into server.js
-// server.js then sends it into mongodb.
-
-function addShipToDB(name, mmsi) { 
-    var xhr = new window.XMLHttpRequest(); 
-    xhr.open("POST", "/vessel_data", true); 
-
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
-    xhr.overrideMimeType("text/html");
-    // Create a state change callback 
-    // xhr.onreadystatechange = function () { 
-    //     if (xhr.readyState === 4 && xhr.status === 200) { 
-
-    //         // Print received data from server 
-    //         console.log("success??")
-
-    //     } 
-    // }; 
-    var data = JSON.stringify({ "name": name, "mmsi": mmsi }); 
-    xhr.send(data); 
-} 
-
-function removeShipFromDB(name, mmsi) {
-    var xhr = new window.XMLHttpRequest(); 
-    xhr.open("POST", "/vessel_remove_data", true); 
-
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
-    xhr.overrideMimeType("text/html");
- 
-    var data = JSON.stringify({ "name": name, "mmsi": mmsi }); 
-    xhr.send(data); 
+function clearDropDownMenu() {
+    while (ship_dropdown.firstChild) {
+        ship_dropdown.removeChild(ship_dropdown.lastChild);
+    }
+    var baseChild = document.createElement('option');
+    baseChild.value = "";
+    baseChild.style = "display: none;";
+    baseChild.selected;
+    baseChild.innerText = "Your Fleet";
+    ship_dropdown.appendChild(baseChild);
 }
 
-// --------------------------------------------------
-// --------------------------------------------------
-// shipIcon.onmouseover = () => shipIcon.togglePopup();
-
-// var scale = new mapboxgl.ScaleControl({
-//     maxWidth: 80,
-//     unit: 'metric'
-// });
-// map.addControl(scale);
-
- // let name = document.querySelector('#inputName'); 
-// let mmsi = document.querySelector('#inputMMSI'); 
 
 
-// //                             PORTS:
+//----------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//                                         ADD/REMOVE SHIP FROM DB
 
-// var ports = require("sea-ports");
-// port_data = ports.JSON;
-// // Object.keys(port_data).forEach(key=>{
-// //     // console.log(`${key} : ${port_data[key].coordinates}`);
-// //     var port_point = new mapboxgl.Marker({
-// //         color: "#ff0000"
-// //     }).setLngLat([port_data[key].coordinates[0], port_data[key].coordinates[1]]).addTo(map);
-// // })
-
-// for (let port of Object.keys(port_data)) {
-//     if (port_data[port].coordinates != undefined) {
-//         var port_point = new mapboxgl.Marker({
-//             color: "#ff0000"
-//         }).setLngLat([port_data[port].coordinates[0], port_data[port].coordinates[1]]).addTo(map);
-//     }
-// }
+function parseInput(text) {
+    var lines = text.split("\n");
+    return lines;
+}
 
 
-//                             OLD WAY OF CONNECTING TO API
-// var request = new XMLHttpRequest()
-// request.onload = () => {
-//     console.log(`Data Loaded: ${request.status} ${request.response}`);
-//     request.onerror = () => {
-//         console.error('Request failed.');
-//     }
-//     if (request.status == 200) {
-//         var data = JSON.parse(request.response);
-        // for (var i = 0; i < data.length; i++) {
-        //     var ship_form = document.createElement('div');
-        //     ship_form.setAttribute('class', 'ship_form');
+//                                                 ADD
+addShipBtn.onclick = (e => {
+    addBtnFunctionality(e);
+});
+async function addBtnFunctionality(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var allMMSI = parseInput(document.getElementById("inputMMSI").value);
+    console.log(allMMSI);
+    editFleetForm.style.visibility = 'hidden';
 
-        //     var text = document.createElement('p');
+    for (let i in allMMSI) {
+        var existInDB = await existsInDB(allMMSI[i]);
+        if (allMMSI[i] != "" && !existInDB) {
 
-        //     for (x in data[i]) {
-        //         text.innerHTML += x + " : " + data[i][x] + "  |  ";
-        //     }
+            // add to dropdown
+            let ship_option = document.createElement('option');
+            ship_option.value = allMMSI[i];
+            ship_option.innerText = allMMSI[i];
+            ship_dropdown.appendChild(ship_option);
+    
+            // add to the database, request an api call to the Marine Traffic 
+            await addShipToDB(allMMSI[i]);
+        } else {
+            warning("mmsi: " + allMMSI[i] + " has already been added");
+        }
+    }
+    // update the map and redraw the vessels from DB
+    drawAllVesselsFromDB();
+    refresh();
+}
 
-        //     // creates a popup for the ship
-        //     let shipPopup = new mapboxgl.Popup({
-        //         anchor: "bottom",
-        //         offset: [0, -8]
-        //     });
+function warning(text) {
+    // OUTPUT A WARNING TO THE USER.
+    console.log(text);
+}
 
-        //     ship_form.appendChild(text);
-        //     shipPopup.setHTML(ship_form.innerText);
 
-        //     var shipIcon = document.createElement('div');
-        //     shipIcon.classList.add('ship');
 
-        //     var ship_marker = new mapboxgl.Marker(shipIcon, {
-        //         draggable: false,
-        //     });
+//                                                 REMOVE
+removeShipBtn.onclick = (e => {
+    removeShipsBtnFunctionality(e);
+});
 
-        //     // inputs all of the data into the popup as well as setting the ships position
-        //     ship_marker.setLngLat([data[i].LON, data[i].LAT]).setPopup(shipPopup).setRotation(data[i].HEADING).addTo(map);
-        // }
-        
-//     } else {
-//         console.log('Error!');
-//     }  
-// };
+async function removeShipsBtnFunctionality(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var allMMSI = parseInput(document.getElementById("inputMMSI").value);
+    console.log(allMMSI);
+    editFleetForm.style.visibility = 'hidden';
+
+    for (let i in allMMSI) {
+        var existInDB = await existsInDB(allMMSI[i]);
+        if (allMMSI[i] != "" && existInDB) {
+
+            // add to dropdown
+            let ship_option = document.createElement('option');
+            ship_option.value = allMMSI[i];
+            ship_option.innerText = allMMSI[i];
+            ship_dropdown.appendChild(ship_option);
+    
+            // add to the database, request an api call to the Marine Traffic 
+            removeShipFromDB(allMMSI[i]);
+        } else {
+            warning("mmsi: " + allMMSI[i] + " has already been added");
+        }
+    }
+    // update the map and redraw the vessels from DB
+    drawAllVesselsFromDB();
+    refresh();
+}
+
+
+//------------------------------------------------------------------------
+//                      Helper Server Functions:
+
+
+async function addShipToDB(mmsi) { 
+    var ship_info = await getVesselInfoFromMarineTraffic(VesselAPIkey, mmsi);
+    var data = JSON.stringify({"mmsi": mmsi, "info" : ship_info}); 
+
+    postData('/add_vessel_data', data).then(data => 
+        console.log(data)).catch(err => console.log(err));
+} 
+
+function removeShipFromDB(mmsi) {
+    deleteData("/delete_vessel/" + mmsi).then(data => 
+        console.log(data)).catch(err => console.log(err));
+}
+
+async function existsInDB(mmsi) {
+    let response = await fetch("/exists_in_db/" + mmsi);
+    if (response.ok) {
+        let data = await response.json();
+        return data.exists;
+    } else {
+        alert("HTTP-Error: " + response.status);
+    }
+}
+
+
+async function postData(url = '', data = '') { 
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: data
+    });
+    return response;
+} 
+
+async function deleteData(url = '') {
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const resData = await 'Resource Deleted...';
+    return resData;
+}
+
+async function getData(url = '') {
+
+}
+

@@ -6,8 +6,6 @@ require('dotenv').config();
 const url = process.env.MONGODB_KEY;
 
 const MongoClient = require("mongodb").MongoClient;                                                                                                         
-// const url = "mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority";
-
 const { json } = require('body-parser');
 
 
@@ -26,7 +24,7 @@ app.get('/', (req, res) => {
 
 
 // Adding ship's data to the database
-app.post('/vessel_data', (req, res) => {
+app.post('/add_vessel_data', (req, res) => {
     var vessel = req.body;                           
     async function addToCollection() {
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
@@ -48,19 +46,37 @@ app.post('/vessel_data', (req, res) => {
     return res.end('done');
 });
 
+// Clear the Entire Collection
+app.post('/clear_all', (req, res) => {                        
+    async function deleteAllInCollection() {
+        var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
+        try {
+            await client.connect();
+            console.log("reached line 55");
+            var db = client.db("map");
+            await db.collection('fleet').deleteMany({});
+        } catch (err) {
+            console.log(err.stack);
+        } finally {
+            await client.close();
+        }
+    }
+    
+    deleteAllInCollection().catch(console.dir);
+    return res.end('done');
+});
+
 
 // removing ship's data from the database
-app.post('/vessel_remove_data', (req, res) => {
-    var vessel = req.body;                          
+app.post('/delete_vessel/:mmsi', (req, res) => {
+    var mmsi = req.params.mmsi;                        
     async function removeFromCollection() {
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
         try {
             await client.connect();
-            console.log("Connected correctly to server");
             var db = client.db("map");
-            var col = db.collection("fleet");
-
-            const p = await col.findOneAndDelete(vessel);
+            // var col = db.collection("fleet").find({"mmsi": mmsi}).limit(1);
+            const p = await col.findOneAndDelete(({"mmsi" : mmsi}));
         } catch (err) {
             console.log(err.stack);
         } finally {
@@ -73,15 +89,15 @@ app.post('/vessel_remove_data', (req, res) => {
 });
 
 
-// Loading ships' data into the map on the server
-app.get("/load_map", (req, res) => {
+// sends all vessel data
+app.get("/get_all_data", (req, res) => {
     async function findVessels() {
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
         try {
             await client.connect();
             console.log("Connected correctly to the database for fleet retrieval!");
-            // database :
             var db = client.db("map");
+
             var allVessels = await db.collection("fleet").find().toArray();
             res.json(allVessels);
         } catch (err) {
@@ -94,3 +110,47 @@ app.get("/load_map", (req, res) => {
     findVessels().catch(console.dir);
 });
 
+// sends all vessel data
+app.get("/get_all_mmsi", (req, res) => {
+    async function findMMMSIs() {
+        var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
+        try {
+            await client.connect();
+            var db = client.db("map");
+
+            var allVessels = await db.collection("fleet").find().toArray();
+            res.json(allVessels);
+        } catch (err) {
+            console.log(err.stack);
+        } finally {
+            await client.close();
+        }
+    }
+        
+    findMMMSIs().catch(console.dir);
+});
+
+
+// checks whether a document is present in the db
+app.get('/exists_in_db/:mmsi', (req, res) => {   
+    var mmsi = req.params.mmsi;
+    var exists = true;
+    async function existsInCollection() {
+        var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
+        try {
+            await client.connect();
+            var db = client.db("map");
+            var doc = db.collection("fleet").find({"mmsi": mmsi}).limit(1);
+            var count = await doc.count();
+            if (count == 0) {
+                exists = false;
+            }
+            res.json({"exists" : exists});
+        } catch (err) {
+            console.log(err.stack);
+        } finally {
+            await client.close();
+        }
+    }
+    existsInCollection().catch(console.dir);
+});

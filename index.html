@@ -15,10 +15,14 @@
         <option style="display: none;" value="" selected>Your Fleet</option>
     </select>
     <form id='editFleetForm'>
-        <input type="text" id="inputName" name="name" placeholder="name" onfocus="this.value=''"><br>
-        <input type="text" id="inputMMSI" name="mmsi" placeholder="mmsi" onfocus="this.value=''"><br>
+        <!-- <input type="text" id="inputName" name="name" placeholder="name" onfocus="this.value=''"><br> -->
+        <!-- <input type="text" id="inputMMSI" name="mmsi" placeholder="mmsi" onfocus="this.value=''"><br> -->
+        <textarea rows = "10" cols = "10" name = "mmsi" id = "inputMMSI" wrap="hard">
+            Enter mmsi here...
+        </textarea><br>
         <button id="addBtn" value="button">Add</button>
         <button id="removeBtn" value="button">Remove</button>
+        <button id="updateBtn" value="button">Update</button>
     </form>
     
     <script src="./client.js"></script>
