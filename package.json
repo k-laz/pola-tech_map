@@ -2,7 +2,7 @@
   "name": "custom_map_pola",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

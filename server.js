@@ -19,6 +19,7 @@ app.listen(process.env.PORT || 3000);
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
 app.get('/', (req, res) => {
+    console.log("connected to server");
     res.sendFile(path.join(__dirname, '/index.html'));
 })
 
