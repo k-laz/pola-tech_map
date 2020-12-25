@@ -92,11 +92,12 @@ app.post('/delete_vessel/:mmsi', (req, res) => {
 // sends all vessel data
 app.get("/get_all_data", (req, res) => {
     async function findVessels() {
+        console.log("connected");
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
         try {
+            console.log("connected!!!");
             await client.connect();
             var db = client.db("map");
-
             var allVessels = await db.collection("fleet").find().toArray();
             res.json(allVessels);
         } catch (err) {
