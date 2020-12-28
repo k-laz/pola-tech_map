@@ -2,34 +2,26 @@ const express = require('express');
 const app = express();
 const path = require('path');
 var bodyParser = require('body-parser');
-// const url = process.env.MONGODB_KEY;
+
+
 const url = "mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority"
+const dbName = "map";
 
 const MongoClient = require("mongodb").MongoClient;                                                                                                         
 const { json } = require('body-parser');
-
-
-const config = require('./config.js');
-console.log(`NODE_ENV=${config.NODE_ENV}`);
-
-// var environment = process.env.NODE_ENV
-// var isDevelopment = environment === 'development'
-
-// if (isDevelopment) {
-//   setUpMoreVerboseLogging()
-// }
 
 
 const helmet = require('helmet');
 app.use(helmet());
 
 app.use(express.static(__dirname));
-app.listen(config.PORT || 3000);
+app.listen(process.env.PORT || 3333);
     
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
+
+
 app.get('/', (req, res) => {
-    console.log("connected to server");
     res.sendFile(path.join(__dirname, '/index.html'));
 })
 
@@ -58,13 +50,13 @@ app.post('/add_vessel_data', (req, res) => {
 });
 
 // Clear the Entire Collection
-app.post('/clear_all', (req, res) => {                        
+app.delete('/delete_all', (req, res) => {                        
     async function deleteAllInCollection() {
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
         try {
             await client.connect();
-            console.log("reached line 55");
-            var db = client.db("map");
+            console.log("connected for deleting");
+            var db = client.db(dbName);
             await db.collection('fleet').deleteMany({});
         } catch (err) {
             console.log(err.stack);
@@ -103,10 +95,8 @@ app.post('/delete_vessel/:mmsi', (req, res) => {
 // sends all vessel data
 app.get("/get_all_data", (req, res) => {
     async function findVessels() {
-        console.log("connected");
         var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
         try {
-            console.log("connected!!!");
             await client.connect();
             var db = client.db("map");
             var allVessels = await db.collection("fleet").find().toArray();
@@ -119,26 +109,6 @@ app.get("/get_all_data", (req, res) => {
     }
         
     findVessels().catch(console.dir);
-});
-
-// sends all vessel data
-app.get("/get_all_mmsi", (req, res) => {
-    async function findMMMSIs() {
-        var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 });
-        try {
-            await client.connect();
-            var db = client.db("map");
-
-            var allVessels = await db.collection("fleet").find().toArray();
-            res.json(allVessels);
-        } catch (err) {
-            console.log(err.stack);
-        } finally {
-            await client.close();
-        }
-    }
-        
-    findMMMSIs().catch(console.dir);
 });
 
 

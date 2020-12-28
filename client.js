@@ -243,33 +243,54 @@ editFleet.onclick = (e => {
 
 
 updateShipBtn.onclick = (e => {
-    e.preventDefault();
-    e.stopPropagation();
-    UPDATE_ALL_VESSELS_INFO();
-    drawAllVesselsFromDB();
+    updateBtnFunctionality(e);
 });
 
-//-----------------------------------------------------------------------------------------------------
+async function updateBtnFunctionality(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    let p = await UPDATE_ALL_VESSELS_INFO();
+
+    editFleetForm.style.visibility = 'hidden';
+
+    refresh();
+}
+
+//============================================================================================
 //                      UPDATING THE ENTIRE COLLECTION WITH DATA FROM MARINE TRAFFIC
+
+
 async function UPDATE_ALL_VESSELS_INFO() {
-    var allMMSI = get_all_mmsi();
+    var allMMSI = await get_all_mmsi();
 
-    deleteData("/delete_all");
+    // clear the entire database collection "fleet"
+    var p = await deleteData("/delete_all");
 
+    // add all of the vessels back into the database with new info
     for (mmsi in allMMSI) {
-        addShipToDB(mmsi);
+        console.log("in the for looP");
+        var s = await addShipToDB(allMMSI[mmsi]);
+    }
+}
+
+//                                         GETTING ALL MMSI FROM THE DB:
+async function get_all_mmsi() {
+    let response = await fetch("/get_all_data");
+    if (response.ok) {
+        let data = await response.json();
+        let arr = [];
+        for (vessel in data) {
+            arr.push(data[vessel].mmsi);
+        }
+        return arr;
+    } else {
+        alert("HTTP-Error: " + response.status);
     }
 }
 
 
-//                           GETTING ALL MMSI FROM THE DB:
-async function get_all_mmsi() {
-    let response = await fetch("/get_all_mmsi");
-    getData
-}
-
-
-//              GETTING A SINGLE VESSEL INFO FROM MARINE TRAFFIC WITH AN API CALL:
+//============================================================================================
+//                    GETTING A SINGLE VESSEL INFO FROM MARINE TRAFFIC WITH AN API CALL:
 async function getVesselInfoFromMarineTraffic(APIkey, mmsi) {
     let response = await fetch(APIkey + mmsi);
     if (response.ok) {
@@ -280,8 +301,7 @@ async function getVesselInfoFromMarineTraffic(APIkey, mmsi) {
     }
 }
 
-//------------------------------------------------------------------------
-//--------------------------------------------------------------------------------
+//=============================================================================================
 //                                         DROPDOWN MENU FUNCTIONALITY:
 
 
@@ -308,8 +328,7 @@ function clearDropDownMenu() {
 
 
 
-//----------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+//=============================================================================================
 //                                         ADD/REMOVE SHIP FROM DB
 
 function parseInput(text) {
@@ -318,7 +337,7 @@ function parseInput(text) {
 }
 
 
-//                                                 ADD
+// ==============================================   ADD
 addShipBtn.onclick = (e => {
     addBtnFunctionality(e);
 });
@@ -332,12 +351,6 @@ async function addBtnFunctionality(e) {
     for (let i in allMMSI) {
         var existInDB = await existsInDB(allMMSI[i]);
         if (allMMSI[i] != "" && !existInDB) {
-
-            // add to dropdown
-            let ship_option = document.createElement('option');
-            ship_option.value = allMMSI[i];
-            ship_option.innerText = allMMSI[i];
-            ship_dropdown.appendChild(ship_option);
     
             // add to the database, request an api call to the Marine Traffic 
             await addShipToDB(allMMSI[i]);
@@ -345,8 +358,7 @@ async function addBtnFunctionality(e) {
             warning("mmsi: " + allMMSI[i] + " has already been added");
         }
     }
-    // update the map and redraw the vessels from DB
-    drawAllVesselsFromDB();
+    //drawAllVesselsFromDB();
     refresh();
 }
 
@@ -357,7 +369,7 @@ function warning(text) {
 
 
 
-//                                                 REMOVE
+// =========================================         REMOVE
 removeShipBtn.onclick = (e => {
     removeShipsBtnFunctionality(e);
 });
@@ -373,11 +385,7 @@ async function removeShipsBtnFunctionality(e) {
         var existInDB = await existsInDB(allMMSI[i]);
         if (allMMSI[i] != "" && existInDB) {
 
-            // add to dropdown
-            let ship_option = document.createElement('option');
-            ship_option.value = allMMSI[i];
-            ship_option.innerText = allMMSI[i];
-            ship_dropdown.appendChild(ship_option);
+            // remove ship from dropdown
     
             // add to the database, request an api call to the Marine Traffic 
             removeShipFromDB(allMMSI[i]);
@@ -391,19 +399,32 @@ async function removeShipsBtnFunctionality(e) {
 }
 
 
-//------------------------------------------------------------------------
-//                      Helper Server Functions:
+//==============================================================
+//                                 Helper Server Functions:
 
 
 async function addShipToDB(mmsi) { 
     var ship_info = await getVesselInfoFromMarineTraffic(VesselAPIkey, mmsi);
     var data = JSON.stringify({"mmsi": mmsi, "info" : ship_info}); 
 
+
+    // add ship to dropdown
+    let ship_option = document.createElement('option');
+    ship_option.value = mmsi;
+    ship_option.innerText = mmsi;
+    ship_dropdown.appendChild(ship_option);
+
+    // post data to server
     postData('/add_vessel_data', data).then(data => 
         console.log(data)).catch(err => console.log(err));
 } 
 
 function removeShipFromDB(mmsi) {
+
+    // remove ship from dropdown
+
+
+
     deleteData("/delete_vessel/" + mmsi).then(data => 
         console.log(data)).catch(err => console.log(err));
 }
@@ -439,10 +460,6 @@ async function deleteData(url = '') {
     });
     const resData = await 'Resource Deleted...';
     return resData;
-}
-
-async function getData(url = '') {
-
 }
 
 
