@@ -29,7 +29,7 @@ map.on('load', () => {
               'source': 'ports',
               'layout': {
                   'icon-image': 'custom-marker',
-                  'icon-size': 0.11,
+                  'icon-size': 0.10,
                   // get the title name from the source's "title" property
                   'text-field': ['get', 'name'],
                   'text-font': [
@@ -38,7 +38,7 @@ map.on('load', () => {
                   ],
                   'text-offset': [0, .5],
                   'text-anchor': 'top',
-                  'text-size': 10
+                  'text-size': 8
               }
           });
       }
@@ -407,7 +407,7 @@ async function addShipToDB(mmsi) {
     var ship_info = await getVesselInfoFromMarineTraffic(VesselAPIkey, mmsi);
     var data = JSON.stringify({"mmsi": mmsi, "info" : ship_info}); 
 
-
+    console.log(data);
     // add ship to dropdown
     let ship_option = document.createElement('option');
     ship_option.value = mmsi;

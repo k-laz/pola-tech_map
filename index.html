@@ -7,7 +7,13 @@
     <link rel="stylesheet" href="style.css">
     <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
-    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; 
+    script-src 'self' 'unsafe-inline' https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css; 
+    worker-src blob: ; child-src blob: ; img-src 'self' data: blob: ; 
+    style-src 'unsafe-inline' https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css;
+    connect-src 'self' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com 
+    https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson
+    services.marinetraffic.com">
 </head>
 <body>
     <nav id="menu"></nav>

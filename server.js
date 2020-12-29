@@ -5,17 +5,51 @@ var bodyParser = require('body-parser');
 
 
 const url = "mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority"
+//const url = 'mongodb://172.17.0.2:27017';
+//const url = 'mongodb://localhost:27017';
+//const url = 'mongodb://Kirill:Dusha200096@host1:8888'
 const dbName = "map";
 
 const MongoClient = require("mongodb").MongoClient;                                                                                                         
 const { json } = require('body-parser');
 
 
+// ==============================================
+//                      CSP headers
+
+// const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
+
+// app.use(expressCspHeader({
+//     directives: {
+//         'script-src': [SELF, 'api.mapbox.com'],
+//         'style-src': [SELF, 'api.mapbox.com'],
+//         'img-src': [SELF],
+//         'worker-src': [NONE],
+//         // 'block-all-mixed-content': true
+//     }
+// }));
+app.use(express.static(__dirname));
+
+var cors = require('cors');
+app.use(cors());
+app.options('*',cors())
+var allowCrossDomain = function(req,res,next) {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+    next();
+}
+
+app.use(allowCrossDomain);
+
+
+//====================================================
+
+
 const helmet = require('helmet');
 app.use(helmet());
 
-app.use(express.static(__dirname));
-app.listen(process.env.PORT || 3333);
+app.listen(process.env.PORT || 3000); 
     
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json());
