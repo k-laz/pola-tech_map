@@ -5,5 +5,5 @@ testLanguageMap.html
 testLayers.html
 testImage.js
 testSVG.js
-/node_modules
+**/node_modules
 .env

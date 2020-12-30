@@ -140,6 +140,43 @@ map.on('click', function(e) {
     }
 });
 
+//============================================================
+//                  temp field for adding names and mmsi
+
+
+var add = document.getElementById("ADD");
+add.onclick = ((e) => {
+    console.log("CLICKED");
+    e.preventDefault();
+    e.stopPropagation();
+    var nameList = parseInput(document.getElementById('nameList').value);
+    var mmsiList = parseInput(document.getElementById('mmsiList').value);
+    for (i = 0; i < nameList.length; i++) {
+        var data = JSON.stringify({"mmsi": mmsiList[i], "name" : nameList[i]});
+        postData('/add_vessel_name_mmsi', data).then(data => 
+            console.log("MY DATA ->" + data.mmsi)).catch(err => console.log(err));
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------
 //                                             DRAWING VESSELS ONTO THE MAP FROM DB:

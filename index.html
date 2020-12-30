@@ -22,12 +22,19 @@
         <option style="display: none;" value="" selected>Your Fleet</option>
     </select>
     <form id='editFleetForm'>
-       <textarea rows = "10" cols = "10" name = "mmsi" id = "inputMMSI" wrap="hard">
+       <!-- <textarea rows = "10" cols = "10" name = "mmsi" id = "inputMMSI" wrap="hard">
             Enter mmsi here...
         </textarea><br>
         <button id="addBtn" value="button">Add</button>
         <button id="removeBtn" value="button">Remove</button>
-        <button id="updateBtn" value="button">Update</button>
+        <button id="updateBtn" value="button">Update</button> -->
+        <textarea rows = "10" cols = "10" name = "mmsi" id = "mmsiList" wrap="hard">
+            Enter mmsi here...
+        </textarea><br>
+        <textarea rows = "10" cols = "10" name = "mmsi" id = "nameList" wrap="hard">
+            Enter names here...
+        </textarea><br>
+        <button id="ADD" value="button">ADD</button>
     </form>
     
     <script src="./client.js"></script>

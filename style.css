@@ -23,6 +23,17 @@ body { margin: 0; padding: 0; }
     width: 100px;
 }
 
+#nameList {
+    width: 117.5px;
+}
+#mmsiList {
+    width: 100px;
+}
+#ADD {
+    margin: auto;
+    width: auto;
+}
+
 #addBtn {
     margin: auto;
     width: auto;

@@ -72,6 +72,50 @@ app.post('/add_vessel_data', (req, res) => {
     return res.end('done');
 });
 
+
+
+
+
+
+
+
+
+
+
+app.post('/add_vessel_name_mmsi', (req, res) => {
+    var vessel = req.body;                           
+    async function addToCollection() {
+        var client = new MongoClient(url, { useUnifiedTopology: true}, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1});
+        try {
+            await client.connect();
+            var db = client.db("map");
+            var col = db.collection("vesselNames");
+
+            // Insert a single document, wait for promise so we can read it back
+            const p = await col.insertOne(vessel);
+        } catch (err) {
+            console.log(err.stack);
+        } finally {
+            await client.close();
+        }
+    }
+    
+    addToCollection().catch(console.dir);
+    return res.end('done');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Clear the Entire Collection
 app.delete('/delete_all', (req, res) => {                        
     async function deleteAllInCollection() {
