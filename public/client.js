@@ -12,7 +12,7 @@ var map = new mapboxgl.Map({
 // older port_icon : 'https://docs.mapbox.com/mapbox-gl-js/assets/custom_marker.png'
 map.on('load', () => {
     map.loadImage(
-      '/port_icon.png',
+      './icons/port_icon.png',
       async function (error, image) {
           if (error) throw error;
           map.addImage('custom-marker', image);
@@ -338,11 +338,11 @@ function parseInput(text) {
 
 // ==============================================   ADD
 addShipBtn.onclick = (e => {
-    addBtnFunctionality(e);
-});
-async function addBtnFunctionality(e) {
     e.preventDefault();
     e.stopPropagation();
+    addBtnFunctionality();
+});
+async function addBtnFunctionality() {
     var allMMSI = parseInput(document.getElementById("inputMMSI").value);
     console.log(allMMSI);
     editFleetForm.style.visibility = 'hidden';
@@ -404,7 +404,8 @@ async function removeShipsBtnFunctionality(e) {
 
 async function addShipToDB(mmsi) { 
     var ship_info = await getVesselInfoFromMarineTraffic(VesselAPIkey, mmsi);
-    var data = JSON.stringify({"mmsi": mmsi, "info" : ship_info}); 
+    var name = getVesselName(mmsi);
+    var data = JSON.stringify({"name": name, "mmsi": mmsi, "info" : ship_info}); 
 
     console.log(data);
     // add ship to dropdown
@@ -417,6 +418,17 @@ async function addShipToDB(mmsi) {
     postData('/add_vessel_data', data).then(data => 
         console.log(data)).catch(err => console.log(err));
 } 
+
+async function getVesselName(mmsi) {
+    let response = await fetch("/vesselName/" + mmsi);
+    if (response.ok) {
+        var data = await response.json();
+        return data.name;
+    } else {
+        alert("HTTP-Error: " + response.status);
+    }
+ }
+
 
 function removeShipFromDB(mmsi) {
 
@@ -460,8 +472,3 @@ async function deleteData(url = '') {
     const resData = await 'Resource Deleted...';
     return resData;
 }
-
-
-
-var ship273216620 = document.getElementById("273216620");
-console.log(ship273216620.id);

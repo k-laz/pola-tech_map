@@ -2,7 +2,7 @@
   "name": "custom_map_pola",
   "version": "1.0.0",
   "description": "",
-  "main": "client.js",
+  "main": "./static/client.js",
   "scripts": {
     "start": "node server.js"
   },
@@ -15,6 +15,7 @@
     "express": "^4.17.1",
     "express-csp-header": "^4.0.0",
     "helmet": "^4.2.0",
-    "mongodb": "^3.6.3"
+    "mongodb": "^3.6.3",
+    "serve-favicon": "^2.5.0"
   }
 }
