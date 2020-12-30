@@ -244,16 +244,14 @@ editFleet.onclick = (e => {
 
 
 updateShipBtn.onclick = (e => {
-    updateBtnFunctionality(e);
-});
-
-async function updateBtnFunctionality(e) {
     e.preventDefault();
     e.stopPropagation();
+    updateBtnFunctionality();
+});
+
+async function updateBtnFunctionality() {
     let p = await UPDATE_ALL_VESSELS_INFO();
-
     editFleetForm.style.visibility = 'hidden';
-
     refresh();
 }
 
