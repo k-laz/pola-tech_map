@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 
 
 const url = "mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority"
-//const url = 'mongodb://172.17.0.2:27017';
+//const url = 'mongodb://172.17.0.3:27017';
 //const url = 'mongodb://localhost:27017';
 //const url = 'mongodb://Kirill:Dusha200096@host1:8888'
 const dbName = "map";
@@ -17,17 +17,6 @@ const { json } = require('body-parser');
 // ==============================================
 //                      CSP headers
 
-// const { expressCspHeader, INLINE, NONE, SELF } = require('express-csp-header');
-
-// app.use(expressCspHeader({
-//     directives: {
-//         'script-src': [SELF, 'api.mapbox.com'],
-//         'style-src': [SELF, 'api.mapbox.com'],
-//         'img-src': [SELF],
-//         'worker-src': [NONE],
-//         // 'block-all-mixed-content': true
-//     }
-// }));
 app.use(express.static(__dirname));
 
 var cors = require('cors');

@@ -13,15 +13,15 @@ var map = new mapboxgl.Map({
 map.on('load', () => {
     map.loadImage(
       '/port_icon.png',
-      function (error, image) {
+      async function (error, image) {
           if (error) throw error;
           map.addImage('custom-marker', image);
-          //    PORTS:
           map.addSource('ports', {
             type: 'geojson',
             data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
           });
   
+
           // Add a symbol(port source) layer
           map.addLayer({
               'id': 'ports',
@@ -41,7 +41,7 @@ map.on('load', () => {
                   'text-size': 8
               }
           });
-      }
+    }
   );
 });
 
@@ -194,6 +194,7 @@ async function drawAllVesselsFromDB() {
 
             // add the ship to the drop down
             let ship_option = document.createElement('option');
+            ship_option.setAttribute("id", data[i].mmsi);
             ship_option.value = data[i].mmsi;
             ship_option.innerText = data[i].mmsi;
             ship_dropdown.appendChild(ship_option);
@@ -463,3 +464,6 @@ async function deleteData(url = '') {
 }
 
 
+
+var ship273216620 = document.getElementById("273216620");
+console.log(ship273216620.id);
