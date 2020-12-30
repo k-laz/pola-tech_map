@@ -194,7 +194,6 @@ async function drawAllVesselsFromDB() {
 
             // add the ship to the drop down
             let ship_option = document.createElement('option');
-            ship_option.setAttribute("id", data[i].mmsi);
             ship_option.value = data[i].mmsi;
             ship_option.innerText = data[i].mmsi;
             ship_dropdown.appendChild(ship_option);
@@ -462,8 +461,3 @@ async function deleteData(url = '') {
     const resData = await 'Resource Deleted...';
     return resData;
 }
-
-
-
-var ship273216620 = document.getElementById("273216620");
-console.log(ship273216620.id);
