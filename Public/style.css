@@ -26,10 +26,12 @@ body { margin: 0; padding: 0; }
 #addBtn {
     margin: auto;
     width: auto;
+    background-color: rgb(144, 231, 13);
 }
 #removeBtn {
     margin: auto;
     width: auto;
+    background-color: rgb(238, 32, 32);
 }
 
 
