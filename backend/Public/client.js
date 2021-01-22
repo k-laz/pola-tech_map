@@ -153,7 +153,7 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
     var link = document.createElement('a');
     link.href = '#';
     link.className = 'active';
-    link.textContent = id + " on/off";
+    link.textContent = id;
 
     link.onclick = function (e) {
         var clickedLayer = this.textContent;
