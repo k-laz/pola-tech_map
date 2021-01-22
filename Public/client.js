@@ -15,6 +15,7 @@ map.on('load', async () => {
     let fleet_data = await loadFleetData();
     console.log(fleet_data);
     loadDropDown(fleet_data);
+    loadMarkers(fleet_data);
 
     map.loadImage(
       './images/port_icon.png',
@@ -107,6 +108,38 @@ async function loadFleetData() {
     }
 }
 
+async function loadMarkers(fleet_data) {
+    fleet_data.features.forEach(function(marker) {
+        var el = document.createElement('div');
+        el.className = 'marker';
+        var marker = new mapboxgl.Marker(el)
+            .setLngLat(marker.geometry.coordinates)
+            .setPopup(new mapboxgl.Popup({ offset: 15 })
+            .setHTML(`<div><h3 style="text-align:left;font-weight: 300;font-size: 18px; color: #0058E3"> ${marker.properties.name} </h3> 
+                    <p style="font-size: 12px"> IMO: ${marker.properties.info.IMO} </p> </div>
+                    <hr color="gray" width="95%">
+                        <p> 
+                            MMSI: ${marker.properties.mmsi} </br>
+                            COURSE: ${marker.properties.info.COURSE} </br>
+                            SPEED: ${marker.properties.info.SPEED} </br>
+                            AIS ETA: ${marker.properties.info.ETA} </br>
+                            Sailing to: ${marker.properties.info.NEXT_PORT_NAME} </br>
+                            Expected ETA: ${marker.properties.info.ETA_CALC}   
+                        </p>
+                    <hr color="gray" width="95%">`
+                    ))
+            .addTo(map);
+    });
+}
+
+{/* <h4 style="text-align:center;font-weight: 500;font-size: 20px; color: #0058E3"> VOYAGE</h4>
+Type: ${marker.properties.current_voyage_type} </br>
+Charterer ${marker.properties.current_voyage_charterers} </br>
+ETCE ${marker.properties.current_voyage_estimated_tce} </br> */}
+
+
+        
+
 // map.addSource('cl', {
 //     "type": "geojson",
 //     "data":{
@@ -145,36 +178,36 @@ async function loadFleetData() {
 //                                BUTTONS TO DISABLE LAYERS:
 
 // enumerate ids of the layers
-var toggleableLayerIds = ['ports', 'fleet'];
+// var toggleableLayerIds = ['ports', 'fleet'];
 
-for (var i = 0; i < toggleableLayerIds.length; i++) {
-    var id = toggleableLayerIds[i];
+// for (var i = 0; i < toggleableLayerIds.length; i++) {
+//     var id = toggleableLayerIds[i];
 
-    var link = document.createElement('a');
-    link.href = '#';
-    link.className = 'active';
-    link.textContent = id + " on/off";
+//     var link = document.createElement('a');
+//     link.href = '#';
+//     link.className = 'active';
+//     link.textContent = id;
 
-    link.onclick = function (e) {
-        var clickedLayer = this.textContent;
-        e.preventDefault();
-        e.stopPropagation();
+//     link.onclick = function (e) {
+//         var clickedLayer = this.textContent;
+//         e.preventDefault();
+//         e.stopPropagation();
 
-        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+//         var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
 
-        // toggle layer visibility by changing the layout object's visibility property
-        if (visibility === 'visible') {
-            map.setLayoutProperty(clickedLayer, 'visibility', 'none');
-            this.className = '';
-        } else {
-            this.className = 'active';
-            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
-        }
-    };
+//         // toggle layer visibility by changing the layout object's visibility property
+//         if (visibility === 'visible') {
+//             map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+//             this.className = '';
+//         } else {
+//             this.className = 'active';
+//             map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+//         }
+//     };
 
-    var layers = document.getElementById('menu');
-    layers.appendChild(link);
-}
+//     var layers = document.getElementById('menu');
+//     layers.appendChild(link);
+// }
 
 
 // ------------------------------------------------------------------------------
@@ -182,33 +215,21 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
 //                                             MISCALLENIOUS:
 
 const ship_dropdown = document.getElementById('ship-list'); 
-const MarineTrafficAPIkey = "https://services.marinetraffic.com/api/exportvessel/v:5/7f70cbed5527332c828792c7bce77421dd54fbe8/timespan:2880/protocol:jsono/mmsi:";
-
 function refresh() {    
     setTimeout(function () {
         location.reload()
     }, 100);
 }
 
-// async function get_all_vessel_data_from_db() {
-//     let response = await fetch("/get_all_data");
-//     if (response.ok) {
-//         let data = await response.json();
-//         return data;
-//     } else {
-//         alert("HTTP-Error: " + response.status);
-//     }
-// }
-
 // =============================================================================================
-//                                              FRONT END FUNCTIONALITY:
+//                                              FRONTEND FUNCTIONALITY:
 
 const MENU = document.getElementById('menu');
 
 var editFleet = document.createElement('a');
 editFleet.href = '#';
 editFleet.className = 'active';
-editFleet.textContent = "edit fleet";
+editFleet.textContent = "EDIT";
 
 var updateBtn = document.createElement('a');
 updateBtn.href = '#';
@@ -251,22 +272,27 @@ async function updateBtnFunctionality() {
 async function UPDATE_ALL_VESSELS() {
     let allMMSI = await get_all_mmsi();
 
-    for(let i in allMMSI) {
-        let ship_info = await getVesselInfoFromMarineTraffic(allMMSI[i]);
-
-        if (ship_info != null) {
-            let name = await get_vessel_name(allMMSI[i]);
-
-            var data = JSON.stringify({"name": name, "mmsi": allMMSI[i], "info" : ship_info});
-            putData('/fleet', data).then(res => {
-                console.log(res);
-            }).catch(err => {
-                console.error(err);
-            });
-        } else {
-            alert("The ship info wasn't found on Marine Traffic");
+    if (allMMSI.length > 0) {
+        for(let i in allMMSI) {
+            //let name = await get_vessel_name(allMMSI[i]);
+            let ship_info = await getVesselInfoFromMarineTraffic(allMMSI[i]);
+    
+            if (ship_info != null) {
+                var data = JSON.stringify({"name": ship_info.SHIPNAME, "mmsi": allMMSI[i], "info" : ship_info});
+    
+                putData('/fleet', data).then(res => {
+                    console.log(res);
+                }).catch(err => {
+                    console.error(err);
+                });
+            } else {
+                alert(`Ship information for ${name} with MMSI: ${MMSI} isn't currently available on Marine Traffic`);
+            }
         }
+    } else {
+        alert("There are 0 vessels in the database")
     }
+    
 }
 
 async function get_all_mmsi() {
@@ -288,13 +314,17 @@ async function get_all_mmsi() {
 //============================================================================================
 //                    GETTING A SINGLE VESSEL INFO FROM MARINE TRAFFIC WITH AN API CALL:
 
+const MarineTrafficAPIkeyIMO = "https://services.marinetraffic.com/api/exportvessel/v:5/7f70cbed5527332c828792c7bce77421dd54fbe8/timespan:2880/msgtype:extended/protocol:jsono/imo:";
+const MarineTrafficAPIkeyMMSI = "https://services.marinetraffic.com/api/exportvessel/v:5/7f70cbed5527332c828792c7bce77421dd54fbe8/timespan:2880/msgtype:extended/protocol:jsono/mmsi:";
+
 async function getVesselInfoFromMarineTraffic(mmsi) {
-    let response = await fetch(MarineTrafficAPIkey + mmsi);
+
+    let response = await fetch(MarineTrafficAPIkeyMMSI + mmsi);
     if (response.ok) {
         let data = await response.json();
         return data[0];
     } else {
-        alert("HTTP-Error: " + response.status);
+        alert("HTTP-Error with Marine Traffic Call : " + response.status);
     }
 }
 
@@ -315,7 +345,6 @@ function loadDropDown(data) {
 
         // fill out the coordinates map 
         shipCoordinates.set(data.features[i].properties.name, [data.features[i].properties.info.LON, data.features[i].properties.info.LAT]);
-        console.log(shipCoordinates.get(data.features[i].properties.mmsi));
     }
 }
 
@@ -346,12 +375,11 @@ addShipBtn.onclick = (e => {
 });
 async function addBtnFunctionality() {
     var allMMSI = parseInput(document.getElementById("inputMMSI").value);
-    console.log("mmsi input for addition: " + allMMSI);
+    console.log("MMSI input for addition: " + allMMSI);
     editFleetForm.style.visibility = 'hidden';
 
     for (let i in allMMSI) {
         let vesselName = await get_vessel_name(allMMSI[i]);
-        console.log("vessel name: " + vesselName);
 
         if (allMMSI[i] != "") {
             await addShipToDB(allMMSI[i], vesselName);
@@ -371,6 +399,19 @@ function get_vessel_name(mmsi) {
     });
 }
 
+async function addShipToDB(mmsi, name) { 
+    var ship_info = await getVesselInfoFromMarineTraffic(mmsi);
+    
+    if (ship_info != null) {
+        var data = JSON.stringify({"name": name, "mmsi": mmsi, "info" : ship_info}); 
+
+        // post data to server
+        postData('/fleet', data).then(res => 
+            console.log(res)).catch(err => console.log(err));
+    } else {
+        alert(`Ship information for ${name} with MMSI: ${mmsi} isn't currently available on Marine Traffic`);
+    }
+} 
 
 
 // =================================================   REMOVE
@@ -382,52 +423,25 @@ removeShipBtn.onclick = (e => {
 
 async function removeShipsBtnFunctionality() {
     var allMMSI = parseInput(document.getElementById("inputMMSI").value);
-    console.log("mmsi input for deletion: " + allMMSI);
+    console.log("MMSI input for deletion: " + allMMSI);
     editFleetForm.style.visibility = 'hidden';
 
     for (let i in allMMSI) {
         if (allMMSI[i] != "") {
-            let vesselName = await get_vessel_name(allMMSI[i]);
-            console.log("vessel name: " + vesselName);
-
-            // add to the database, request an api call to the Marine Traffic 
-            removeShipFromDB(allMMSI[i]);
-        } else {
-            warning("mmsi: " + allMMSI[i] + " has already been added");
+            await removeShipFromDB(allMMSI[i]);
         }
     }
     refresh();
 }
 
-
-//==============================================================
-//                                 BackEnd Functions:
-
-async function addShipToDB(mmsi, name) { 
-    var ship_info = await getVesselInfoFromMarineTraffic(mmsi);
-    
-    if (ship_info != null) {
-        var data = JSON.stringify({"name": name, "mmsi": mmsi, "info" : ship_info}); 
-
-        // add ship to dropdown
-        let ship_option = document.createElement('option');
-        ship_option.value = mmsi;
-        ship_option.innerText = mmsi;
-        ship_dropdown.appendChild(ship_option);
-
-        // post data to server
-        postData('/fleet', data).then(res => 
-            console.log(res)).catch(err => console.log(err));
-    } else {
-        alert("The ship info wasn't found on Marine Traffic");
-    }
-} 
-
-
-function removeShipFromDB(mmsi) {
-    deleteData("/fleet/" + mmsi).then(data => 
+function removeShipFromDB(MMSI) {
+    deleteData("/fleet/" + MMSI).then(data => 
         console.log(data)).catch(err => console.log(err));
 }
+
+
+//==============================================================
+//                                 BackEnd Helper Functions:
 
 
 async function postData(url = '', data = '') { 

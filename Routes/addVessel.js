@@ -16,6 +16,8 @@ module.exports = async (req, res) => {
         }
     });
 
+    console.log(req.body.name);
+
     await db.storeVessel(vessel);
     res.send(vessel);
 };

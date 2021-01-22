@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { vesselModel } = require('../Models/Vessel');
 const { vesselName } = require('../Models/VesselName');
 
-mongoose.connect(process.env.DB_CONNECTION, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect("mongodb+srv://Kirill:Dusha200096@clustermap.ra2wf.mongodb.net/map?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true});
 
 const db = mongoose.connection;
 
@@ -13,12 +13,14 @@ db.once('open', function() {
     console.log("Connection Successful!");
 }); 
 
+
+//MAKE SURE YOU UPDATE POTENTIAL DUPLICATES INSTEAD OF DOING NOTHING
 async function storeVessel(vessel) {
     vessel.save()
         .then(vessel => {
             console.log(vessel);
         }).catch(err => {
-            console.log(err);
+            console.log("saving error : " + err);
         })
 };
 
@@ -27,18 +29,19 @@ async function getVessels() {
     return docs;
 };
 
-async function deleteVessel(mmsi) {
-    vesselModel.deleteOne({ mmsi: mmsi }, (err) => {
+async function deleteVessel(MMSI) {
+    vesselModel.deleteOne({ mmsi: MMSI }, (err) => {
         if (err) console.error(err);
     });
 };
 
-async function getVessel(mmsi) {
+async function getVessel(MMSI) {
     const doc = await vesselModel.findOne({ properties: {
-        mmsi: mmsi
+        mmsi: MMSI
     }});
     return doc;
 };
+
 
 async function updateVessel(data) {
     
@@ -65,8 +68,8 @@ async function updateVessel(data) {
 };
 
 
-async function getVesselName(mmsi) {
-    let vessel = await vesselName.findOne({ "mmsi": mmsi });
+async function getVesselName(MMSI) {
+    let vessel = await vesselName.findOne({ "mmsi": MMSI });
     if (vessel != null) {
         return vessel.name;
     }
