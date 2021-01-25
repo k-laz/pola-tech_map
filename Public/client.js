@@ -274,11 +274,10 @@ async function UPDATE_ALL_VESSELS() {
 
     if (allMMSI.length > 0) {
         for(let i in allMMSI) {
-            //let name = await get_vessel_name(allMMSI[i]);
             let ship_info = await getVesselInfoFromMarineTraffic(allMMSI[i]);
     
             if (ship_info != null) {
-                var data = JSON.stringify({"name": ship_info.SHIPNAME, "mmsi": allMMSI[i], "info" : ship_info});
+                var data = JSON.stringify({"name": ship_info.SHIPNAME, "mmsi": ship_info.MMSI, "info" : ship_info});
     
                 putData('/fleet', data).then(res => {
                     console.log(res);
@@ -286,7 +285,7 @@ async function UPDATE_ALL_VESSELS() {
                     console.error(err);
                 });
             } else {
-                alert(`Ship information for ${name} with MMSI: ${MMSI} isn't currently available on Marine Traffic`);
+                alert(`Ship information for ship with MMSI: ${allMMSI[i]} is currently unavailable on Marine Traffic`);
             }
         }
     } else {
