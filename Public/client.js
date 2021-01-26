@@ -1,10 +1,12 @@
 
 //                                      MAIN MAP FUNCTION WITH PORTS DATA:
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2xheiIsImEiOiJja2h1bGl3dXYyYjB0MzJrNnNxcnBmc3pzIn0.9qgI_dzZzzMnDvPDtWWR6Q';
+//mapboxgl.accessToken = 'pk.eyJ1Ijoia2xheiIsImEiOiJja2h1bGl3dXYyYjB0MzJrNnNxcnBmc3pzIn0.9qgI_dzZzzMnDvPDtWWR6Q';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleGVuc2hpbiIsImEiOiJja2Zkeml5aDIwMDJjMnRxdjh1Mml0c3poIn0.WZ9T__trFIxFK9FmWfqNwQ'
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+    // style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+    style: "mapbox://styles/alexenshin/ckkclr9ka247g17o5qqgokyzr",
     center: [0, 30],
     zoom: 1,
     maxZoom: 15,
@@ -72,15 +74,7 @@ map.on('load', async () => {
                     'icon-rotate': {
                         'type': 'identity',
                         'property': 'rotation'
-                    },
-                    'text-field': ['get', 'name'],
-                    'text-font': [
-                        'Open Sans Semibold',
-                        'Arial Unicode MS Bold'
-                    ],
-                    'text-offset': [0, 2],
-                    'text-anchor': 'top',
-                    'text-size': 8
+                    }
                 },
                 'paint': {
                     "text-color": "#000000"
@@ -88,7 +82,36 @@ map.on('load', async () => {
             });
         }
     );
+
+    map.on('mousemove', 'fleet', function (e) {
+        
+        hoverVesselName = e.features[0].properties.name;
+        // map.setFeatureState(
+        //     {
+        //         source: 'fleet-source',
+        //         id: 'fleet',
+        //         'text-field': hoverVesselName 
+        //     }
+        // )
+        console.log(hoverVesselName)
+
+    
+    });
+     
+    map.on('mouseleave', 'fleet', function () {
+        
+    });
 });
+
+// 'text-field': ['get', 'name'],
+// 'text-font': [
+//     'Open Sans Semibold',
+//     'Arial Unicode MS Bold'
+// ],
+// 'text-offset': [0, 2],
+// 'text-variable-anchor': 'top',
+// 'text-size': 8,
+// 'text-allow-overlap': true
 
 async function loadFleetData() {
     let response = await fetch('/fleet');
