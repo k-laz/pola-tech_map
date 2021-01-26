@@ -52,7 +52,7 @@ map.on('load', async () => {
     );
 
     map.loadImage(
-        './images/brownVessel.png',
+        './images/vessel_marker.png',
         async function (error, image) {
             if (error) throw error;
             map.addImage('vessel-marker', image);
@@ -70,48 +70,40 @@ map.on('load', async () => {
                     'icon-image': 'vessel-marker',
                     'icon-allow-overlap': true,
                     'icon-ignore-placement': true,
-                    'icon-size': .09,
+                    'icon-size': .06,
                     'icon-rotate': {
                         'type': 'identity',
                         'property': 'rotation'
-                    }
+                    },
+                    'text-field': ['get', 'name'],
+                    'text-font': ['Open Sans Light'],
+                    'text-offset': [0, 2],
+                    'text-variable-anchor': ['top'],
+                    'text-size': 8,
+                    'text-allow-overlap': true
                 },
                 'paint': {
-                    "text-color": "#000000"
+                    "text-color": "#000000",
+                    
                 }
             });
         }
     );
-
-    map.on('mousemove', 'fleet', function (e) {
-        
-        hoverVesselName = e.features[0].properties.name;
-        // map.setFeatureState(
-        //     {
-        //         source: 'fleet-source',
-        //         id: 'fleet',
-        //         'text-field': hoverVesselName 
-        //     }
-        // )
-        console.log(hoverVesselName)
-
     
-    });
-     
-    map.on('mouseleave', 'fleet', function () {
-        
-    });
+
+    // var ship_name_display = document.getElementById('ship_name');
+    // var ship_mmsi_display = document.getElementById('ship_mmsi');
+    // map.on('mousemove', 'fleet', function (e) {
+    //     // Check whether features exist
+    //     if (e.features.length > 0) {
+    //         ship_name_display.textContent = e.features[0].properties.name;
+    //         ship_mmsi_display.textContent = e.features[0].properties.mmsi;
+    //     }
+    // });
 });
 
-// 'text-field': ['get', 'name'],
-// 'text-font': [
-//     'Open Sans Semibold',
-//     'Arial Unicode MS Bold'
-// ],
-// 'text-offset': [0, 2],
-// 'text-variable-anchor': 'top',
-// 'text-size': 8,
-// 'text-allow-overlap': true
+
+
 
 async function loadFleetData() {
     let response = await fetch('/fleet');
@@ -152,6 +144,12 @@ async function loadMarkers(fleet_data) {
                     <hr color="gray" width="95%">`
                     ))
             .addTo(map);
+
+        
+        // const markerDiv = marker.getElement();
+        
+        // markerDiv.addEventListener('mouseenter', () => marker.togglePopup());
+        // markerDiv.addEventListener('mouseleave', () => marker.togglePopup());
     });
 }
 

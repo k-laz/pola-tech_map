@@ -11,6 +11,29 @@ body { margin: 0; padding: 0; }
     height: 38px;
 }
 
+.shipInfo {
+    z-index: 1;
+    position: absolute;
+    font-family: 'Rubik';
+    margin-top: 10px;
+    margin-left: 10px;
+    padding: 5px;
+    width: 20%;
+    border: 2px solid black;
+    font-size: 14px;
+    color: #222;
+    background-color: #fff;
+    border-radius: 3px;
+}
+
+.pola-icon {
+    z-index: 1;
+    position: absolute;
+    width: 20px;
+    
+}
+  
+
 #editFleetForm {
     visibility: hidden; 
     position: absolute;
